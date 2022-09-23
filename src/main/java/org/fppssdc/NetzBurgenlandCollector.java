@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.fppssdc.model.ProviderAccountObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -26,18 +27,16 @@ import java.util.HashMap;
 public class NetzBurgenlandCollector extends Collector
 {
     static final String apiUrl = "https://smartmeter.netzburgenland.at/enView.Portal/api";
-    private String username = null;
-    private String password = null;
+    private ProviderAccountObject providerAccount;
 
     private HttpClient client = null;
 
     /**
      * Constructor
      */
-    public NetzBurgenlandCollector(String username, String password)
+    public NetzBurgenlandCollector(ProviderAccountObject providerAccount)
     {
-        this.username = username;
-        this.password = password;
+        this.providerAccount = providerAccount;
 
         client = HttpClient.newBuilder()
                 .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
@@ -49,6 +48,40 @@ public class NetzBurgenlandCollector extends Collector
     {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl+"/meteringpoints/consumption"))
+                .header("User-Agent", "PostmanRuntime/7.29.0")
+                .header("Accept", "*/*")
+                .header("Accept-Encoding", "gzip, deflate, br")
+                //.header("Connection", "keep-alive")
+                .GET()
+                .build();
+
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Gson gson = new Gson();
+
+        ArrayList<MeeteringPoint> meeteringPoints = new ArrayList<>();
+
+        JsonArray jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
+
+        for ( JsonElement o : jsonArray)
+        {
+            JsonObject e = o.getAsJsonObject();
+
+            MeeteringPoint.MeeteringPointType type= MeeteringPoint.MeeteringPointType.AccountingPoint;
+
+            if ( e.get("meteringPointType").equals("AccountingPoint") )
+                type = MeeteringPoint.MeeteringPointType.AccountingPoint;
+
+            meeteringPoints.add(new MeeteringPoint(e.get("identifier").toString().replace("\"", ""), type, new ArrayList<>()));
+        }
+
+        return meeteringPoints;
+    }
+
+    private ArrayList<MeeteringPoint> getFeedInMeeteringPoints() throws Exception
+    {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl+"/meteringpoints/feedin"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -146,7 +179,7 @@ public class NetzBurgenlandCollector extends Collector
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("username="+username+"&password="+password))
+                .POST(HttpRequest.BodyPublishers.ofString("username="+providerAccount.getProviderAccountUsername()+"&password="+providerAccount.getProviderAccountPassword()))
                 .build();
 
         HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -163,7 +196,7 @@ public class NetzBurgenlandCollector extends Collector
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("username="+username+"&password="+password))
+                .POST(HttpRequest.BodyPublishers.ofString("username="+providerAccount.getProviderAccountUsername()+"&password="+providerAccount.getProviderAccountPassword()))
                 .build();
 
         HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -243,9 +276,14 @@ public class NetzBurgenlandCollector extends Collector
                     }
                 }
 
+                //////////////
+                //feedin
+                //////////////
+                ArrayList<MeeteringPoint> feedinMeeteringPoints = new ArrayList<>();
+
+                feedinMeeteringPoints = getFeedInMeeteringPoints();
+
                 logoff();
-
-
             }
             catch (Exception e)
             {
@@ -254,7 +292,7 @@ public class NetzBurgenlandCollector extends Collector
 
             try
             {
-                Thread.sleep(1000);
+                Thread.sleep(10000);
             }
             catch (InterruptedException e)
             {

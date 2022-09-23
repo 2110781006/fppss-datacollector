@@ -1,11 +1,14 @@
 package org.fppssdc;
 
+import org.fppssdc.model.ProviderAccountObject;
+
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 
 public class Main
 {
@@ -13,9 +16,34 @@ public class Main
     {
         System.out.println("start");
 
-        NetzBurgenlandCollector netzBurgenlandCollector = new NetzBurgenlandCollector("xxx", "xxx");
+        try
+        {
+            FppssRestConnector fppssRestConnector = new FppssRestConnector(System.getenv("FPPSS_REST_URL"));
 
-        new Thread(netzBurgenlandCollector).start();
+            ProviderAccountObject[] providerAccounts = fppssRestConnector.getProviderAccounts();
+
+            for( var providerAccount : providerAccounts )
+            {
+                if ( providerAccount.getProviderName().equals("huf") )//Huawei Fusion Inverter
+                {
+
+                }
+                else if ( providerAccount.getProviderName().equals("nb") )//Netz Burgenland
+                {
+                    NetzBurgenlandCollector netzBurgenlandCollector = new NetzBurgenlandCollector(providerAccount);
+
+                    new Thread(netzBurgenlandCollector).start();
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        /*NetzBurgenlandCollector netzBurgenlandCollector = new NetzBurgenlandCollector("xxx", "xxx");
+
+        new Thread(netzBurgenlandCollector).start();*/
 
         /*try
         {
