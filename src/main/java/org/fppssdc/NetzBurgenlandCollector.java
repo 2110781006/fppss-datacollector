@@ -79,7 +79,7 @@ public class NetzBurgenlandCollector extends Collector
     }
 
     private ArrayList<MeeteringPoint> getFeedInMeeteringPoints() throws Exception
-    {
+    {//testcommit
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl+"/meteringpoints/feedin"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
