@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 
 public class FppssRestConnector
 {
@@ -34,7 +35,7 @@ public class FppssRestConnector
     public ProviderAccountObject[] getProviderAccounts() throws IOException, InterruptedException
     {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url+"/api/v1/accounts/getProviderAccounts"))
+                .uri(URI.create(url+"/api/v1/provideraccounts"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -45,6 +46,8 @@ public class FppssRestConnector
 
         Gson gson = new Gson();
 
-        return gson.fromJson(response.body(), ProviderAccountObject[].class);
+        var providerAccounts = gson.fromJson(response.body(), ProviderAccountObject[].class);
+
+        return providerAccounts;
     }
 }
