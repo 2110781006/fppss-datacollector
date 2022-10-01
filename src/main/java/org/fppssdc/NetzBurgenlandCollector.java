@@ -319,8 +319,8 @@ public class NetzBurgenlandCollector extends Collector
             AccountingPoint
         }
 
-        private String id;
-        private MeeteringPointType meeteringPointType;
+        public String id;
+        public MeeteringPointType meeteringPointType;
         ArrayList<String> datapoints;
 
         public MeeteringPoint(String id, MeeteringPointType meeteringPointType, ArrayList<String> datapoints)
