@@ -1,4 +1,4 @@
-FROM maven:3.6.0-jdk-17-slim AS build
+FROM maven:eclipse-temurin:17 AS build
 COPY src /app/src
 COPY pom.xml /app
 RUN mvn -f /app/pom.xml clean package
