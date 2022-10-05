@@ -3,12 +3,13 @@
  * FPPSS (Fleischhacker, Pilwax, Premauer, Schmit & Stadler)
  */
 
-package org.fppssdc;
+package org.fppssdc.collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.fppssdc.connectors.FppssRestConnector;
 import org.fppssdc.model.MeeteringPoint;
 import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
@@ -31,7 +32,6 @@ import java.util.HashMap;
 public class NetzBurgenlandCollector extends Collector
 {
     static final String apiUrl = "https://smartmeter.netzburgenland.at/enView.Portal/api";
-    private ProviderAccountObject providerAccount;
 
     private HttpClient client = null;
 
@@ -40,7 +40,7 @@ public class NetzBurgenlandCollector extends Collector
      */
     public NetzBurgenlandCollector(ProviderAccountObject providerAccount)
     {
-        this.providerAccount = providerAccount;
+        super.providerAccount = providerAccount;
 
         client = HttpClient.newBuilder()
                 .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
@@ -48,6 +48,11 @@ public class NetzBurgenlandCollector extends Collector
                 .build();
     }
 
+    /**
+     * Get consumption meeterpoints
+     * @return
+     * @throws Exception
+     */
     private ArrayList<MeeteringPoint> getConsumptionMeeteringPoints() throws Exception
     {
         HttpRequest request = HttpRequest.newBuilder()
@@ -55,7 +60,6 @@ public class NetzBurgenlandCollector extends Collector
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
-                //.header("Connection", "keep-alive")
                 .GET()
                 .build();
 
@@ -86,6 +90,11 @@ public class NetzBurgenlandCollector extends Collector
         return meeteringPoints;
     }
 
+    /**
+     * Get feedin meeterpoints
+     * @return
+     * @throws Exception
+     */
     private ArrayList<MeeteringPoint> getFeedInMeeteringPoints() throws Exception
     {
         HttpRequest request = HttpRequest.newBuilder()
@@ -93,7 +102,6 @@ public class NetzBurgenlandCollector extends Collector
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
-                //.header("Connection", "keep-alive")
                 .GET()
                 .build();
 
@@ -124,6 +132,14 @@ public class NetzBurgenlandCollector extends Collector
         return meeteringPoints;
     }
 
+    /**
+     * Get consumption meter day values
+     * @param meeteringPoint
+     * @param from
+     * @param to
+     * @return
+     * @throws Exception
+     */
     public ArrayList<TimeValueObject> getMeterConsumptionDayValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-MM-01'T'00:00:00"));
@@ -134,7 +150,6 @@ public class NetzBurgenlandCollector extends Collector
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
-                //.header("Connection", "keep-alive")
                 .GET()
                 .build();
 
@@ -176,6 +191,14 @@ public class NetzBurgenlandCollector extends Collector
         return timeValueObjects;
     }
 
+    /**
+     * Get feedin meeter day values
+     * @param meeteringPoint
+     * @param from
+     * @param to
+     * @return
+     * @throws Exception
+     */
     public ArrayList<TimeValueObject> getMeterFeedinDayValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-MM-01'T'00:00:00"));
@@ -186,7 +209,6 @@ public class NetzBurgenlandCollector extends Collector
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
-                //.header("Connection", "keep-alive")
                 .GET()
                 .build();
 
@@ -466,7 +488,7 @@ public class NetzBurgenlandCollector extends Collector
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("username="+providerAccount.getProviderAccountUsername()+"&password="+providerAccount.getProviderAccountPassword()))
+                .POST(HttpRequest.BodyPublishers.ofString("username="+providerAccount.getProviderAccountUsername()+"&password="+providerAccount.getDecryptedPw()))
                 .build();
 
         HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -487,7 +509,7 @@ public class NetzBurgenlandCollector extends Collector
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("username="+providerAccount.getProviderAccountUsername()+"&password="+providerAccount.getProviderAccountPassword()))
+                .POST(HttpRequest.BodyPublishers.ofString("username="+providerAccount.getProviderAccountUsername()+"&password="+providerAccount.getDecryptedPw()))
                 .build();
 
         HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -538,6 +560,8 @@ public class NetzBurgenlandCollector extends Collector
     @Override
     public void run()
     {
+        System.out.println("Start Netzburgenland Collector for Provideraccount: "+providerAccount);
+
         while(true)//start workerthread
         {
             try

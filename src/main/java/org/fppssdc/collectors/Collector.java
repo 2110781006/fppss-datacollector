@@ -3,8 +3,9 @@
  * FPPSS (Fleischhacker, Pilwax, Premauer, Schmit & Stadler)
  */
 
-package org.fppssdc;
+package org.fppssdc.collectors;
 
+import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
 
 import java.util.ArrayList;
@@ -14,5 +15,7 @@ import java.util.ArrayList;
  */
 public abstract class Collector implements Runnable
 {
+    protected ProviderAccountObject providerAccount;
+
     public abstract void run();
 }

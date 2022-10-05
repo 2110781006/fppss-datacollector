@@ -3,7 +3,7 @@
  * FPPSS (Fleischhacker, Pilwax, Premauer, Schmit & Stadler)
  */
 
-package org.fppssdc;
+package org.fppssdc.connectors;
 
 import com.google.gson.*;
 import org.fppssdc.model.MeeteringPoint;
