@@ -3,9 +3,6 @@ package org.fppssdc.model;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
-import java.sql.Connection;
-import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.math.BigDecimal;
@@ -23,8 +20,9 @@ public class TimeValueObject   {
   private Integer providerAccountId;
   private BigDecimal value;
   private BigDecimal counterValue;
+  private Integer type;
 
-  public TimeValueObject(OffsetDateTime timestamp, String meeterId, String datapointname, Integer providerAccountId, BigDecimal value, BigDecimal counterValue, Boolean feedin)
+  public TimeValueObject(OffsetDateTime timestamp, String meeterId, String datapointname, Integer providerAccountId, BigDecimal value, BigDecimal counterValue, Integer feedin)
   {
     this.timestamp = timestamp;
     this.meeterId = meeterId;
@@ -32,10 +30,9 @@ public class TimeValueObject   {
     this.providerAccountId = providerAccountId;
     this.value = value;
     this.counterValue = counterValue;
-    this.feedin = feedin;
+    this.type = feedin;
   }
 
-  private Boolean feedin;
   public TimeValueObject timestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
     return this;
@@ -122,23 +119,18 @@ public class TimeValueObject   {
     this.counterValue = counterValue;
   }
 
-  public TimeValueObject feedin(Boolean feedin) {
-    this.feedin = feedin;
-    return this;
-  }
-
   /**
    * feedin value or consumption value
    * @return feedin
   */
 
 
-  public Boolean getFeedin() {
-    return feedin;
+  public Integer getType() {
+    return type;
   }
 
-  public void setFeedin(Boolean feedin) {
-    this.feedin = feedin;
+  public void setType(Integer type) {
+    this.type = type;
   }
 
   public String getMeeterId()
@@ -166,12 +158,12 @@ public class TimeValueObject   {
         Objects.equals(this.providerAccountId, timeValueObject.providerAccountId) &&
         Objects.equals(this.value, timeValueObject.value) &&
         Objects.equals(this.counterValue, timeValueObject.counterValue) &&
-        Objects.equals(this.feedin, timeValueObject.feedin);
+        Objects.equals(this.type, timeValueObject.type);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(timestamp, datapointname, providerAccountId, value, counterValue, feedin);
+    return Objects.hash(timestamp, datapointname, providerAccountId, value, counterValue, type);
   }
 
   @Override
@@ -184,7 +176,7 @@ public class TimeValueObject   {
     sb.append("    providerAccountId: ").append(toIndentedString(providerAccountId)).append("\n");
     sb.append("    value: ").append(toIndentedString(value)).append("\n");
     sb.append("    counterValue: ").append(toIndentedString(counterValue)).append("\n");
-    sb.append("    feedin: ").append(toIndentedString(feedin)).append("\n");
+    sb.append("    feedin: ").append(toIndentedString(type)).append("\n");
     sb.append("}");
     return sb.toString();
   }

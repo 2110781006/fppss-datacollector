@@ -79,6 +79,7 @@ public class FppssRestConnector
         {
             case Consumption: postfixType="consumption"; break;
             case Feedin: postfixType="feedin"; break;
+            case Production: postfixType="production"; break;
         }
 
         switch (resolution)
@@ -87,6 +88,7 @@ public class FppssRestConnector
             case day: postfixResolution="day"; break;
             case month: postfixResolution="month"; break;
             case year: postfixResolution="year"; break;
+            case spontan: postfixResolution="spontan"; break;
         }
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -123,6 +125,7 @@ public class FppssRestConnector
         {
             case Consumption: postfixType="consumption"; break;
             case Feedin: postfixType="feedin"; break;
+            case Production: postfixType="production"; break;
         }
 
         switch (resolution)
@@ -131,6 +134,7 @@ public class FppssRestConnector
             case day: postfixResolution="day"; break;
             case month: postfixResolution="month"; break;
             case year: postfixResolution="year"; break;
+            case spontan: postfixResolution="spontan"; break;
         }
 
         HttpRequest request = HttpRequest.newBuilder()

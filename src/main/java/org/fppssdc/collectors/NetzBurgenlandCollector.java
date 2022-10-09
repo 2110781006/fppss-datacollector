@@ -84,7 +84,7 @@ public class NetzBurgenlandCollector extends Collector
 
             datapoints.add("1.8.1");//consumption dp
 
-            meeteringPoints.add(new MeeteringPoint(e.get("identifier").toString().replace("\"", ""), MeeteringPoint.Type.Consumption, type, datapoints,false));
+            meeteringPoints.add(new MeeteringPoint(e.get("identifier").toString().replace("\"", ""), MeeteringPoint.Type.Consumption, type, datapoints));
         }
 
         return meeteringPoints;
@@ -126,7 +126,7 @@ public class NetzBurgenlandCollector extends Collector
 
             datapoints.add("2.8.1");//consumption dp
 
-            meeteringPoints.add(new MeeteringPoint(e.get("identifier").toString().replace("\"", ""), MeeteringPoint.Type.Feedin, type, datapoints, true));
+            meeteringPoints.add(new MeeteringPoint(e.get("identifier").toString().replace("\"", ""), MeeteringPoint.Type.Feedin, type, datapoints));
         }
 
         return meeteringPoints;
@@ -182,7 +182,7 @@ public class NetzBurgenlandCollector extends Collector
                                 tempTime.getMonthValue(),tempTime.getDayOfMonth(),0,0,0,0, ZoneOffset.UTC);
 
                         timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.isFeedin()));
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -241,7 +241,7 @@ public class NetzBurgenlandCollector extends Collector
                                 tempTime.getMonthValue(),tempTime.getDayOfMonth(),0,0,0,0, ZoneOffset.UTC);
 
                         timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.isFeedin()));
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -289,11 +289,15 @@ public class NetzBurgenlandCollector extends Collector
                     if ( o.get("value") != null && o.get("reading") != null )//full qualified value
                     {
                         OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"",""));
+
+                        if ( tempTime.toEpochSecond() > OffsetDateTime.now().toEpochSecond() )//use start time because timestamp is in future
+                            tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"","")).minusDays(1);
+
                         OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
                                 tempTime.getMonthValue(),1,0,0,0,0, ZoneOffset.UTC);
 
                         timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.isFeedin()));
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -341,11 +345,15 @@ public class NetzBurgenlandCollector extends Collector
                     if ( o.get("value") != null && o.get("reading") != null )//full qualified value
                     {
                         OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"",""));
+
+                        if ( tempTime.toEpochSecond() > OffsetDateTime.now().toEpochSecond() )//use start time because timestamp is in future
+                            tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"","")).minusDays(1);
+
                         OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
                                 tempTime.getMonthValue(),1,0,0,0,0, ZoneOffset.UTC);
 
                         timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.isFeedin()));
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -403,7 +411,7 @@ public class NetzBurgenlandCollector extends Collector
                                 1,1,0,0,0,0, ZoneOffset.UTC);
 
                         timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.isFeedin()));
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -461,7 +469,7 @@ public class NetzBurgenlandCollector extends Collector
                                 1,1,0,0,0,0, ZoneOffset.UTC);
 
                         timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.isFeedin()));
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
                     }
                 }
             }
