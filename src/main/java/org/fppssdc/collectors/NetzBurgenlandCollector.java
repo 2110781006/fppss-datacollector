@@ -38,9 +38,10 @@ public class NetzBurgenlandCollector extends Collector
     /**
      * Constructor
      */
-    public NetzBurgenlandCollector(ProviderAccountObject providerAccount)
+    public NetzBurgenlandCollector(ProviderAccountObject providerAccount, Integer interval)
     {
         super.providerAccount = providerAccount;
+        super.interval = interval;
 
         client = HttpClient.newBuilder()
                 .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
@@ -647,7 +648,7 @@ public class NetzBurgenlandCollector extends Collector
 
             try
             {
-                Thread.sleep(10000);
+                Thread.sleep(interval*1000);
             }
             catch (InterruptedException e)
             {

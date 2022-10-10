@@ -35,9 +35,10 @@ public class HuaweiFusionCollector extends Collector
     /**
      * Constructor
      */
-    public HuaweiFusionCollector(ProviderAccountObject providerAccount)
+    public HuaweiFusionCollector(ProviderAccountObject providerAccount, Integer interval)
     {
         super.providerAccount = providerAccount;
+        super.interval = interval;
 
         client = HttpClient.newBuilder()
                 .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
@@ -47,13 +48,6 @@ public class HuaweiFusionCollector extends Collector
 
     void logout() throws Exception
     {
-        /*String body = "{ "+
-                "\"organizationName\":\"\", "+
-                "\"verifycode\": null, "+
-                "\"multiRegionName\": null, "+
-                "\"username\": \""+providerAccount.getProviderAccountUsername()+"\", "+
-                "\"password\": \""+providerAccount.getDecryptedPw()+"\" }";*/
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://region01eu5.fusionsolar.huawei.com/unisess/v1/logout"))
                 .header("User-Agent", "okhttp/3.10.0")
@@ -63,21 +57,6 @@ public class HuaweiFusionCollector extends Collector
                 .build();
 
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        System.out.println("#####"+response.statusCode());
-        //System.out.println("#####"+response.body());
-
-        /*if ( response.statusCode() != 200 || ((String)response.body()).contains("loginBtn") )//error while login
-            throw new Exception("Login error");
-
-        if ( response.statusCode() == 200 )
-        {
-            Gson gson = new Gson();
-            var resp = gson.fromJson((String)response.body(), JsonObject.class);
-
-            if ( resp.get("errorCode") != null && !resp.get("errorCode").isJsonNull() && !resp.get("errorCode").equals("null") )
-                throw new Exception("Login error");
-        }*/
     }
 
     void login() throws Exception
@@ -88,8 +67,6 @@ public class HuaweiFusionCollector extends Collector
                 "\"multiRegionName\": null, "+
                 "\"username\": \""+providerAccount.getProviderAccountUsername()+"\", "+
                 "\"password\": \""+providerAccount.getDecryptedPw()+"\" }";
-
-        System.out.println(body);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://eu5.fusionsolar.huawei.com/unisso/v2/validateUser.action"))
@@ -107,32 +84,22 @@ public class HuaweiFusionCollector extends Collector
 
         if ( response.statusCode() == 200 )
         {
-            System.out.println(response.body());
             Gson gson = new Gson();
             var resp = gson.fromJson((String)response.body(), JsonObject.class);
 
             if ( resp.get("errorCode") != null && !resp.get("errorCode").isJsonNull() && !resp.get("errorCode").equals("null") )
                 throw new Exception("Login error");
         }
-
-        System.out.println(response.body());
     }
 
     private HttpResponse execHttpRequest(HttpRequest request) throws Exception
     {
-
-
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        //response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(response.statusCode());
-        System.out.println(response.headers());
-        //System.out.println(response.body());
 
         int cnt = 0;
 
         while(response.statusCode() != 200 && cnt < 30)//redirect to target url
         {
-            System.out.println("------"+response.statusCode()+":::"+response.uri());
             request = HttpRequest.newBuilder()
                     .uri(response.uri())
                     .header("User-Agent", "okhttp/3.10.0")
@@ -141,13 +108,11 @@ public class HuaweiFusionCollector extends Collector
                     .GET()
                     .build();
             response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            //Thread.sleep(1000);
-            System.out.println("+++++"+response.statusCode()+":::"+response.uri());
+
             cnt++;
         }
 
-        System.out.println(response.statusCode());
-        System.out.println(response.body());
+
 
         return response;
     }
@@ -388,7 +353,7 @@ public class HuaweiFusionCollector extends Collector
 
                 JsonArray days = data.getAsJsonArray("xAxis");
                 JsonArray producedPower = data.getAsJsonArray("productPower");
-                System.out.println("from.toEpochSecond()"+from.toEpochSecond()+days);
+
                 String datapointname = meteringPoint.getDatapoints().get(0);
 
                 for (int i = 0; i < days.size(); i++)
@@ -633,7 +598,7 @@ public class HuaweiFusionCollector extends Collector
 
                 }
 
-                Thread.sleep(2000);
+                Thread.sleep(interval*1000);
                 logout();
             }
             catch (Exception e)

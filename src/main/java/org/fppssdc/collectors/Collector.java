@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public abstract class Collector implements Runnable
 {
     protected ProviderAccountObject providerAccount;
+    protected Integer interval;
 
     public abstract void run();
 }

@@ -18,6 +18,12 @@ public class Main
     {
         Properties properties = System.getProperties();
 
+        Integer interval = 60 * 5;//5 minutes
+
+        if ( System.getenv("INTERVAL") != null && ( System.getenv("INTERVAL").isEmpty() || System.getenv("INTERVAL").equals("")) )
+            interval = Integer.parseInt(System.getenv("INTERVAL"));
+
+
         System.out.println("Start Application");
         System.out.println("Java version: "+properties.getProperty("java.version"));
         System.out.println("Java runtime: "+properties.getProperty("java.runtime.name"));
@@ -26,6 +32,7 @@ public class Main
         System.out.println("OS name: "+properties.getProperty("os.name"));
         System.out.println("OS version: "+properties.getProperty("os.version"));
         System.out.println("FPPSS_REST_URL: "+System.getenv("FPPSS_REST_URL"));
+        System.out.println("Interval: "+interval+" seconds");
 
         HashMap<Integer, Thread> startedCollectors = new HashMap<Integer, Thread>();
 
@@ -43,7 +50,7 @@ public class Main
                     {
                         if ( !startedCollectors.containsKey(providerAccount.getProviderAccountId()) )//start collector if not running
                         {
-                            HuaweiFusionCollector huaweiFusionCollector = new HuaweiFusionCollector(providerAccount);
+                            HuaweiFusionCollector huaweiFusionCollector = new HuaweiFusionCollector(providerAccount, interval);
 
                             Thread huaweiFusionCollectorThread = new Thread(huaweiFusionCollector);
 
@@ -56,7 +63,7 @@ public class Main
                     {
                         if ( !startedCollectors.containsKey(providerAccount.getProviderAccountId()) )//start collector if not running
                         {
-                            NetzBurgenlandCollector netzBurgenlandCollector = new NetzBurgenlandCollector(providerAccount);
+                            NetzBurgenlandCollector netzBurgenlandCollector = new NetzBurgenlandCollector(providerAccount, interval);
 
                             Thread netzBurgenlandCollectorThread = new Thread(netzBurgenlandCollector);
 
