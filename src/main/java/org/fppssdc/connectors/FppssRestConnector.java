@@ -6,7 +6,7 @@
 package org.fppssdc.connectors;
 
 import com.google.gson.*;
-import org.fppssdc.model.MeeteringPoint;
+import org.fppssdc.model.MeteringPoint;
 import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
 
@@ -63,19 +63,19 @@ public class FppssRestConnector
     }
 
     /**
-     * Get last timestamp of meeteringpoint datapoint and resolution
-     * @param meeteringPoint
+     * Get last timestamp of meteringpoint datapoint and resolution
+     * @param meteringPoint
      * @param resolution
      * @param providerAccountId
      * @return
      * @throws Exception
      */
-    public OffsetDateTime getMeterLastTimestamp(MeeteringPoint meeteringPoint, TimeValueObject.Resolution resolution, int providerAccountId) throws Exception
+    public OffsetDateTime getMeterLastTimestamp(MeteringPoint meteringPoint, TimeValueObject.Resolution resolution, int providerAccountId) throws Exception
     {
         String postfixType = "";
         String postfixResolution = "";
 
-        switch (meeteringPoint.getType())
+        switch (meteringPoint.getType())
         {
             case Consumption: postfixType="consumption"; break;
             case Feedin: postfixType="feedin"; break;
@@ -92,7 +92,7 @@ public class FppssRestConnector
         }
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url+"/api/v1/values/"+postfixType+"/"+postfixResolution+"/lastTimeStamp/"+providerAccountId+"/"+meeteringPoint.getId()+"/"+meeteringPoint.getDatapoints().get(0)))
+                .uri(URI.create(url+"/api/v1/values/"+postfixType+"/"+postfixResolution+"/lastTimeStamp/"+providerAccountId+"/"+meteringPoint.getId()+"/"+meteringPoint.getDatapoints().get(0)))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -113,15 +113,15 @@ public class FppssRestConnector
     }
 
     /**
-     * Save consumption meeter year values in database
+     * Save consumption meter year values in database
      * @param timeValueObjects
      */
-    public void saveMeterValuesInDatabase(MeeteringPoint meeteringPoint, TimeValueObject.Resolution resolution, ArrayList<TimeValueObject> timeValueObjects) throws Exception
+    public void saveMeterValuesInDatabase(MeteringPoint meteringPoint, TimeValueObject.Resolution resolution, ArrayList<TimeValueObject> timeValueObjects) throws Exception
     {
         String postfixType = "";
         String postfixResolution = "";
 
-        switch (meeteringPoint.getType())
+        switch (meteringPoint.getType())
         {
             case Consumption: postfixType="consumption"; break;
             case Feedin: postfixType="feedin"; break;

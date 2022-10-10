@@ -10,7 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.fppssdc.connectors.FppssRestConnector;
-import org.fppssdc.model.MeeteringPoint;
+import org.fppssdc.model.MeteringPoint;
 import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
 import org.jsoup.Jsoup;
@@ -49,11 +49,11 @@ public class NetzBurgenlandCollector extends Collector
     }
 
     /**
-     * Get consumption meeterpoints
+     * Get consumption meterpoints
      * @return
      * @throws Exception
      */
-    private ArrayList<MeeteringPoint> getConsumptionMeeteringPoints() throws Exception
+    private ArrayList<MeteringPoint> getConsumptionMeteringPoints() throws Exception
     {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl+"/meteringpoints/consumption"))
@@ -67,7 +67,7 @@ public class NetzBurgenlandCollector extends Collector
 
         Gson gson = new Gson();
 
-        ArrayList<MeeteringPoint> meeteringPoints = new ArrayList<>();
+        ArrayList<MeteringPoint> meteringPoints = new ArrayList<>();
 
         JsonArray jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
 
@@ -75,27 +75,27 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject e = o.getAsJsonObject();
 
-            MeeteringPoint.MeeteringPointType type= MeeteringPoint.MeeteringPointType.AccountingPoint;
+            MeteringPoint.MeteringPointType type= MeteringPoint.MeteringPointType.AccountingPoint;
 
             if ( e.get("meteringPointType").equals("AccountingPoint") )
-                type = MeeteringPoint.MeeteringPointType.AccountingPoint;
+                type = MeteringPoint.MeteringPointType.AccountingPoint;
 
             var datapoints = new ArrayList<String>();
 
             datapoints.add("1.8.1");//consumption dp
 
-            meeteringPoints.add(new MeeteringPoint(e.get("identifier").toString().replace("\"", ""), MeeteringPoint.Type.Consumption, type, datapoints));
+            meteringPoints.add(new MeteringPoint(e.get("identifier").toString().replace("\"", ""), MeteringPoint.Type.Consumption, type, datapoints));
         }
 
-        return meeteringPoints;
+        return meteringPoints;
     }
 
     /**
-     * Get feedin meeterpoints
+     * Get feedin meterpoints
      * @return
      * @throws Exception
      */
-    private ArrayList<MeeteringPoint> getFeedInMeeteringPoints() throws Exception
+    private ArrayList<MeteringPoint> getFeedInMeteringPoints() throws Exception
     {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl+"/meteringpoints/feedin"))
@@ -109,7 +109,7 @@ public class NetzBurgenlandCollector extends Collector
 
         Gson gson = new Gson();
 
-        ArrayList<MeeteringPoint> meeteringPoints = new ArrayList<>();
+        ArrayList<MeteringPoint> meteringPoints = new ArrayList<>();
 
         JsonArray jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
 
@@ -117,36 +117,36 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject e = o.getAsJsonObject();
 
-            MeeteringPoint.MeeteringPointType type= MeeteringPoint.MeeteringPointType.AccountingPoint;
+            MeteringPoint.MeteringPointType type= MeteringPoint.MeteringPointType.AccountingPoint;
 
             if ( e.get("meteringPointType").equals("AccountingPoint") )
-                type = MeeteringPoint.MeeteringPointType.AccountingPoint;
+                type = MeteringPoint.MeteringPointType.AccountingPoint;
 
             var datapoints = new ArrayList<String>();
 
             datapoints.add("2.8.1");//consumption dp
 
-            meeteringPoints.add(new MeeteringPoint(e.get("identifier").toString().replace("\"", ""), MeeteringPoint.Type.Feedin, type, datapoints));
+            meteringPoints.add(new MeteringPoint(e.get("identifier").toString().replace("\"", ""), MeteringPoint.Type.Feedin, type, datapoints));
         }
 
-        return meeteringPoints;
+        return meteringPoints;
     }
 
     /**
      * Get consumption meter day values
-     * @param meeteringPoint
+     * @param meteringPoint
      * @param from
      * @param to
      * @return
      * @throws Exception
      */
-    public ArrayList<TimeValueObject> getMeterConsumptionDayValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    public ArrayList<TimeValueObject> getMeterConsumptionDayValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-MM-01'T'00:00:00"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/consumption/month?end="+toStr+"%2B01:00&meteringPointIdentifier="+meeteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .uri(URI.create(apiUrl+"/consumption/month?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -161,7 +161,7 @@ public class NetzBurgenlandCollector extends Collector
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        String datapointname = meeteringPoint.getDatapoints().get(0);
+        String datapointname = meteringPoint.getDatapoints().get(0);
 
         for ( JsonElement jsonElement : jsonArray )
         {
@@ -181,8 +181,8 @@ public class NetzBurgenlandCollector extends Collector
                         OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
                                 tempTime.getMonthValue(),tempTime.getDayOfMonth(),0,0,0,0, ZoneOffset.UTC);
 
-                        timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
+                        timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -192,20 +192,20 @@ public class NetzBurgenlandCollector extends Collector
     }
 
     /**
-     * Get feedin meeter day values
-     * @param meeteringPoint
+     * Get feedin meter day values
+     * @param meteringPoint
      * @param from
      * @param to
      * @return
      * @throws Exception
      */
-    public ArrayList<TimeValueObject> getMeterFeedinDayValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    public ArrayList<TimeValueObject> getMeterFeedinDayValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-MM-01'T'00:00:00"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/feedin/month?end="+toStr+"%2B01:00&meteringPointIdentifier="+meeteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .uri(URI.create(apiUrl+"/feedin/month?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -220,7 +220,7 @@ public class NetzBurgenlandCollector extends Collector
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        String datapointname = meeteringPoint.getDatapoints().get(0);
+        String datapointname = meteringPoint.getDatapoints().get(0);
 
         for ( JsonElement jsonElement : jsonArray )
         {
@@ -240,8 +240,8 @@ public class NetzBurgenlandCollector extends Collector
                         OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
                                 tempTime.getMonthValue(),tempTime.getDayOfMonth(),0,0,0,0, ZoneOffset.UTC);
 
-                        timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
+                        timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -250,13 +250,13 @@ public class NetzBurgenlandCollector extends Collector
         return timeValueObjects;
     }
 
-    public ArrayList<TimeValueObject> getMeterConsumptionMonthValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    public ArrayList<TimeValueObject> getMeterConsumptionMonthValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-MM-01'T'00:00:00"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/consumption/year?end="+toStr+"%2B01:00&meteringPointIdentifier="+meeteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .uri(URI.create(apiUrl+"/consumption/year?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -272,7 +272,7 @@ public class NetzBurgenlandCollector extends Collector
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        String datapointname = meeteringPoint.getDatapoints().get(0);
+        String datapointname = meteringPoint.getDatapoints().get(0);
 
         for ( JsonElement jsonElement : jsonArray )
         {
@@ -296,8 +296,8 @@ public class NetzBurgenlandCollector extends Collector
                         OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
                                 tempTime.getMonthValue(),1,0,0,0,0, ZoneOffset.UTC);
 
-                        timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
+                        timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -306,13 +306,13 @@ public class NetzBurgenlandCollector extends Collector
         return timeValueObjects;
     }
 
-    public ArrayList<TimeValueObject> getMeterFeedinMonthValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    public ArrayList<TimeValueObject> getMeterFeedinMonthValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-MM-01'T'00:00:00"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/feedin/year?end="+toStr+"%2B01:00&meteringPointIdentifier="+meeteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .uri(URI.create(apiUrl+"/feedin/year?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -328,7 +328,7 @@ public class NetzBurgenlandCollector extends Collector
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        String datapointname = meeteringPoint.getDatapoints().get(0);
+        String datapointname = meteringPoint.getDatapoints().get(0);
 
         for ( JsonElement jsonElement : jsonArray )
         {
@@ -352,8 +352,8 @@ public class NetzBurgenlandCollector extends Collector
                         OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
                                 tempTime.getMonthValue(),1,0,0,0,0, ZoneOffset.UTC);
 
-                        timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
+                        timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -363,19 +363,19 @@ public class NetzBurgenlandCollector extends Collector
     }
 
     /**
-     * Get year values of given timerange and meeteringpoint
-     * @param meeteringPoint
+     * Get year values of given timerange and meteringpoint
+     * @param meteringPoint
      * @param from
      * @param to
      * @throws Exception
      */
-    public ArrayList<TimeValueObject> getMeterConsumptionYearValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    public ArrayList<TimeValueObject> getMeterConsumptionYearValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-01-01'T'00:00:00"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/consumption/overview?end="+toStr+"%2B01:00&meteringPointIdentifier="+meeteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .uri(URI.create(apiUrl+"/consumption/overview?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -391,7 +391,7 @@ public class NetzBurgenlandCollector extends Collector
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        String datapointname = meeteringPoint.getDatapoints().get(0);
+        String datapointname = meteringPoint.getDatapoints().get(0);
 
         for ( JsonElement jsonElement : jsonArray )
         {
@@ -410,8 +410,8 @@ public class NetzBurgenlandCollector extends Collector
                         OffsetDateTime dateTime = OffsetDateTime.of(OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"","")).getYear(),
                                 1,1,0,0,0,0, ZoneOffset.UTC);
 
-                        timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
+                        timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -421,19 +421,19 @@ public class NetzBurgenlandCollector extends Collector
     }
 
     /**
-     * Get year feedin values of given timerange and meeteringpoint
-     * @param meeteringPoint
+     * Get year feedin values of given timerange and meteringpoint
+     * @param meteringPoint
      * @param from
      * @param to
      * @throws Exception
      */
-    public ArrayList<TimeValueObject> getMeterFeedinYearValuesFromNetzBurgenland(MeeteringPoint meeteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    public ArrayList<TimeValueObject> getMeterFeedinYearValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
         String fromStr = from.format(DateTimeFormatter.ofPattern("yyyy-01-01'T'00:00:00"));
         String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/feedin/overview?end="+toStr+"%2B01:00&meteringPointIdentifier="+meeteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .uri(URI.create(apiUrl+"/feedin/overview?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
                 .header("User-Agent", "PostmanRuntime/7.29.0")
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
@@ -449,7 +449,7 @@ public class NetzBurgenlandCollector extends Collector
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        String datapointname = meeteringPoint.getDatapoints().get(0);
+        String datapointname = meteringPoint.getDatapoints().get(0);
 
         for ( JsonElement jsonElement : jsonArray )
         {
@@ -468,8 +468,8 @@ public class NetzBurgenlandCollector extends Collector
                         OffsetDateTime dateTime = OffsetDateTime.of(OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"","")).getYear(),
                                 1,1,0,0,0,0, ZoneOffset.UTC);
 
-                        timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meeteringPoint.getType().ordinal()));
+                        timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
                     }
                 }
             }
@@ -581,52 +581,52 @@ public class NetzBurgenlandCollector extends Collector
                 //////////////
                 //consumption
                 //////////////
-                ArrayList<MeeteringPoint> consumptionMeeteringPoints = getConsumptionMeeteringPoints();
+                ArrayList<MeteringPoint> consumptionMeteringPoints = getConsumptionMeteringPoints();
 
-                for (var meeteringPoint : consumptionMeeteringPoints)
+                for (var meteringPoint : consumptionMeteringPoints)
                 {
-                    if (meeteringPoint.getMeeteringPointType() == MeeteringPoint.MeeteringPointType.AccountingPoint)//consumption
+                    if (meteringPoint.getMeteringPointType() == MeteringPoint.MeteringPointType.AccountingPoint)//consumption
                     {
                         //year values
-                        OffsetDateTime lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.year, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> yearValues = getMeterConsumptionYearValuesFromNetzBurgenland(meeteringPoint, lastTimestamp, OffsetDateTime.now());
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.year, yearValues);
+                        OffsetDateTime lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.year, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> yearValues = getMeterConsumptionYearValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.year, yearValues);
 
                         //month values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.month, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> monthValues = getMeterConsumptionMonthValuesFromNetzBurgenland(meeteringPoint, lastTimestamp, OffsetDateTime.now());
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.month, monthValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.month, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> monthValues = getMeterConsumptionMonthValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.month, monthValues);
 
                         //day values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> dayValues = getMeterConsumptionDayValuesFromNetzBurgenland(meeteringPoint, lastTimestamp, OffsetDateTime.now());
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.day, dayValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> dayValues = getMeterConsumptionDayValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.day, dayValues);
                     }
                 }
 
                 //////////////
                 //feedin
                 //////////////
-                ArrayList<MeeteringPoint> feedinMeeteringPoints  = getFeedInMeeteringPoints();
+                ArrayList<MeteringPoint> feedinMeteringPoints  = getFeedInMeteringPoints();
 
-                for (var meeteringPoint : feedinMeeteringPoints)
+                for (var meteringPoint : feedinMeteringPoints)
                 {
-                    if (meeteringPoint.getMeeteringPointType() == MeeteringPoint.MeeteringPointType.AccountingPoint)//consumption
+                    if (meteringPoint.getMeteringPointType() == MeteringPoint.MeteringPointType.AccountingPoint)//consumption
                     {
                         //year values
-                        OffsetDateTime lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.year, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> yearValues = getMeterFeedinYearValuesFromNetzBurgenland(meeteringPoint, lastTimestamp, OffsetDateTime.now());
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.year, yearValues);
+                        OffsetDateTime lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.year, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> yearValues = getMeterFeedinYearValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.year, yearValues);
 
                         //month values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.month, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> monthValues = getMeterFeedinMonthValuesFromNetzBurgenland(meeteringPoint, lastTimestamp, OffsetDateTime.now());
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.month, monthValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.month, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> monthValues = getMeterFeedinMonthValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.month, monthValues);
 
                         //day values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> dayValues = getMeterFeedinDayValuesFromNetzBurgenland(meeteringPoint, lastTimestamp, OffsetDateTime.now());
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.day, dayValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> dayValues = getMeterFeedinDayValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.day, dayValues);
                     }
                 }
 

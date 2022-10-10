@@ -15,17 +15,17 @@ import java.time.OffsetDateTime;
 public class TimeValueObject   {
 
   private OffsetDateTime timestamp;
-  private String meeterId;
+  private String meterId;
   private String datapointname;
   private Integer providerAccountId;
   private BigDecimal value;
   private BigDecimal counterValue;
   private Integer type;
 
-  public TimeValueObject(OffsetDateTime timestamp, String meeterId, String datapointname, Integer providerAccountId, BigDecimal value, BigDecimal counterValue, Integer feedin)
+  public TimeValueObject(OffsetDateTime timestamp, String meterId, String datapointname, Integer providerAccountId, BigDecimal value, BigDecimal counterValue, Integer feedin)
   {
     this.timestamp = timestamp;
-    this.meeterId = meeterId;
+    this.meterId = meterId;
     this.datapointname = datapointname;
     this.providerAccountId = providerAccountId;
     this.value = value;
@@ -107,7 +107,7 @@ public class TimeValueObject   {
   }
 
   /**
-   * counter value of the smart meeter
+   * counter value of the smart meter
    * @return counterValue
   */
 
@@ -133,14 +133,14 @@ public class TimeValueObject   {
     this.type = type;
   }
 
-  public String getMeeterId()
+  public String getMeterId()
   {
-    return meeterId;
+    return meterId;
   }
 
-  public void setMeeterId(String meeterId)
+  public void setMeterId(String meterId)
   {
-    this.meeterId = meeterId;
+    this.meterId = meterId;
   }
 
   @Override
@@ -153,7 +153,7 @@ public class TimeValueObject   {
     }
     TimeValueObject timeValueObject = (TimeValueObject) o;
     return Objects.equals(this.timestamp, timeValueObject.timestamp) &&
-        Objects.equals(this.meeterId, timeValueObject.meeterId) &&
+        Objects.equals(this.meterId, timeValueObject.meterId) &&
         Objects.equals(this.datapointname, timeValueObject.datapointname) &&
         Objects.equals(this.providerAccountId, timeValueObject.providerAccountId) &&
         Objects.equals(this.value, timeValueObject.value) &&

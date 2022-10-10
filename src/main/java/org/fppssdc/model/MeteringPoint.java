@@ -8,11 +8,11 @@ package org.fppssdc.model;
 import java.util.ArrayList;
 
 /**
- * Meetering point class
+ * Metering point class
  */
-public class MeeteringPoint
+public class MeteringPoint
 {
-    public enum MeeteringPointType
+    public enum MeteringPointType
     {
         AccountingPoint
     }
@@ -26,14 +26,14 @@ public class MeeteringPoint
 
     private String id;
     private Type type;
-    private MeeteringPointType meeteringPointType;
+    private MeteringPointType meteringPointType;
     private ArrayList<String> datapoints;
 
-    public MeeteringPoint(String id, Type type, MeeteringPointType meeteringPointType, ArrayList<String> datapoints)
+    public MeteringPoint(String id, Type type, MeteringPointType meteringPointType, ArrayList<String> datapoints)
     {
         this.id = id;
         this.type = type;
-        this.meeteringPointType = meeteringPointType;
+        this.meteringPointType = meteringPointType;
         this.datapoints = datapoints;
     }
 
@@ -57,14 +57,14 @@ public class MeeteringPoint
         this.type = type;
     }
 
-    public MeeteringPointType getMeeteringPointType()
+    public MeteringPointType getMeteringPointType()
     {
-        return meeteringPointType;
+        return meteringPointType;
     }
 
-    public void setMeeteringPointType(MeeteringPointType meeteringPointType)
+    public void setMeteringPointType(MeteringPointType meteringPointType)
     {
-        this.meeteringPointType = meeteringPointType;
+        this.meteringPointType = meteringPointType;
     }
 
     public ArrayList<String> getDatapoints()

@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.fppssdc.connectors.FppssRestConnector;
-import org.fppssdc.model.MeeteringPoint;
+import org.fppssdc.model.MeteringPoint;
 import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
 
@@ -152,7 +152,7 @@ public class HuaweiFusionCollector extends Collector
         return response;
     }
 
-    private ArrayList<TimeValueObject> getMeterProductionYearValuesFromHuawei(MeeteringPoint meeteringPoint, OffsetDateTime from) throws Exception
+    private ArrayList<TimeValueObject> getMeterProductionYearValuesFromHuawei(MeteringPoint meteringPoint, OffsetDateTime from) throws Exception
     {
 
         if ( from.toEpochSecond() < OffsetDateTime.parse("2021-12-31T23:00:00Z").toEpochSecond() )
@@ -160,7 +160,7 @@ public class HuaweiFusionCollector extends Collector
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/station/v1/"+
-                        "overview/energy-balance?stationDn="+ URLEncoder.encode(meeteringPoint.getId())+"&timeDim=6&queryTime="+from.toEpochSecond()+"000&timeZone=1&timeZoneStr=Europe%2FVienna&_="+OffsetDateTime.now().toEpochSecond()+"000"))
+                        "overview/energy-balance?stationDn="+ URLEncoder.encode(meteringPoint.getId())+"&timeDim=6&queryTime="+from.toEpochSecond()+"000&timeZone=1&timeZoneStr=Europe%2FVienna&_="+OffsetDateTime.now().toEpochSecond()+"000"))
                 .header("User-Agent", "okhttp/3.10.0")
                 .header("Content-Type", "application/json")
                 .header("Accept", "*/*")
@@ -182,7 +182,7 @@ public class HuaweiFusionCollector extends Collector
 
             ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-            String datapointname = meeteringPoint.getDatapoints().get(0);
+            String datapointname = meteringPoint.getDatapoints().get(0);
 
             for ( int i = 0; i < years.size(); i++ )
             {
@@ -193,8 +193,8 @@ public class HuaweiFusionCollector extends Collector
                 if ( !producedPower.get(i).getAsString().equals("") && !producedPower.get(i).getAsString().equals("--") )
                     value = producedPower.get(i).getAsBigDecimal();
 
-                timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                        value, new BigDecimal(0), meeteringPoint.getType().ordinal()));
+                timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                        value, new BigDecimal(0), meteringPoint.getType().ordinal()));
             }
 
             return timeValueObjects;
@@ -203,7 +203,7 @@ public class HuaweiFusionCollector extends Collector
         return null;
     }
 
-    private ArrayList<TimeValueObject> getMeterProductionHourValuesFromHuawei(MeeteringPoint meeteringPoint, OffsetDateTime from) throws Exception
+    private ArrayList<TimeValueObject> getMeterProductionHourValuesFromHuawei(MeteringPoint meteringPoint, OffsetDateTime from) throws Exception
     {
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
@@ -258,7 +258,7 @@ public class HuaweiFusionCollector extends Collector
 
                 JsonArray producedPower = yAsix.get(0).getAsJsonArray();
 
-                String datapointname = meeteringPoint.getDatapoints().get(0);
+                String datapointname = meteringPoint.getDatapoints().get(0);
 
                 for (int i = 0; i < hours.size(); i++)
                 {
@@ -287,8 +287,8 @@ public class HuaweiFusionCollector extends Collector
                             !producedPower.get(i).getAsString().equals("-"))
                         value = producedPower.get(i).getAsBigDecimal();
 
-                    timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                            value, new BigDecimal(0), meeteringPoint.getType().ordinal()));
+                    timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                            value, new BigDecimal(0), meteringPoint.getType().ordinal()));
                 }
 
                 //return timeValueObjects;
@@ -300,7 +300,7 @@ public class HuaweiFusionCollector extends Collector
         return timeValueObjects;
     }
 
-    private ArrayList<TimeValueObject> getMeterProductionMonthValuesFromHuawei(MeeteringPoint meeteringPoint, OffsetDateTime from) throws Exception
+    private ArrayList<TimeValueObject> getMeterProductionMonthValuesFromHuawei(MeteringPoint meteringPoint, OffsetDateTime from) throws Exception
     {
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
@@ -311,7 +311,7 @@ public class HuaweiFusionCollector extends Collector
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/station/v1/" +
-                            "overview/energy-balance?stationDn=" + URLEncoder.encode(meeteringPoint.getId()) + "&timeDim=5&queryTime=" + from.toEpochSecond() + "000&timeZone=1&timeZoneStr=Europe%2FVienna&_=" + OffsetDateTime.now().toEpochSecond() + "000"))
+                            "overview/energy-balance?stationDn=" + URLEncoder.encode(meteringPoint.getId()) + "&timeDim=5&queryTime=" + from.toEpochSecond() + "000&timeZone=1&timeZoneStr=Europe%2FVienna&_=" + OffsetDateTime.now().toEpochSecond() + "000"))
                     .header("User-Agent", "okhttp/3.10.0")
                     .header("Content-Type", "application/json")
                     .header("Accept", "*/*")
@@ -331,7 +331,7 @@ public class HuaweiFusionCollector extends Collector
                 JsonArray months = data.getAsJsonArray("xAxis");
                 JsonArray producedPower = data.getAsJsonArray("productPower");
 
-                String datapointname = meeteringPoint.getDatapoints().get(0);
+                String datapointname = meteringPoint.getDatapoints().get(0);
 
                 for (int i = 0; i < months.size(); i++)
                 {
@@ -342,8 +342,8 @@ public class HuaweiFusionCollector extends Collector
                     if (!producedPower.get(i).getAsString().equals("") && !producedPower.get(i).getAsString().equals("--"))
                         value = producedPower.get(i).getAsBigDecimal();
 
-                    timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                            value, new BigDecimal(0), meeteringPoint.getType().ordinal()));
+                    timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                            value, new BigDecimal(0), meteringPoint.getType().ordinal()));
                 }
 
                 //return timeValueObjects;
@@ -355,7 +355,7 @@ public class HuaweiFusionCollector extends Collector
         return timeValueObjects;
     }
 
-    private ArrayList<TimeValueObject> getMeterProductionDayValuesFromHuawei(MeeteringPoint meeteringPoint, OffsetDateTime from) throws Exception
+    private ArrayList<TimeValueObject> getMeterProductionDayValuesFromHuawei(MeteringPoint meteringPoint, OffsetDateTime from) throws Exception
     {
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
@@ -369,7 +369,7 @@ public class HuaweiFusionCollector extends Collector
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/station/v1/" +
-                            "overview/energy-balance?stationDn=" + URLEncoder.encode(meeteringPoint.getId()) + "&timeDim=4&queryTime=" + from.toEpochSecond() + "000&timeZone=1&timeZoneStr=Europe%2FVienna&_=" + OffsetDateTime.now().toEpochSecond() + "000"))
+                            "overview/energy-balance?stationDn=" + URLEncoder.encode(meteringPoint.getId()) + "&timeDim=4&queryTime=" + from.toEpochSecond() + "000&timeZone=1&timeZoneStr=Europe%2FVienna&_=" + OffsetDateTime.now().toEpochSecond() + "000"))
                     .header("User-Agent", "okhttp/3.10.0")
                     .header("Content-Type", "application/json")
                     .header("Accept", "*/*")
@@ -389,7 +389,7 @@ public class HuaweiFusionCollector extends Collector
                 JsonArray days = data.getAsJsonArray("xAxis");
                 JsonArray producedPower = data.getAsJsonArray("productPower");
                 System.out.println("from.toEpochSecond()"+from.toEpochSecond()+days);
-                String datapointname = meeteringPoint.getDatapoints().get(0);
+                String datapointname = meteringPoint.getDatapoints().get(0);
 
                 for (int i = 0; i < days.size(); i++)
                 {
@@ -405,8 +405,8 @@ public class HuaweiFusionCollector extends Collector
                     if (!producedPower.get(i).getAsString().equals("") && !producedPower.get(i).getAsString().equals("--"))
                         value = producedPower.get(i).getAsBigDecimal();
 
-                    timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                            value, new BigDecimal(0), meeteringPoint.getType().ordinal()));
+                    timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                            value, new BigDecimal(0), meteringPoint.getType().ordinal()));
                 }
 
                 //return timeValueObjects;
@@ -418,7 +418,7 @@ public class HuaweiFusionCollector extends Collector
         return timeValueObjects;
     }
 
-    private ArrayList<TimeValueObject> buildHourValuesFromSpontanValues(MeeteringPoint meeteringPoint, ArrayList<TimeValueObject> spontanValues)
+    private ArrayList<TimeValueObject> buildHourValuesFromSpontanValues(MeteringPoint meteringPoint, ArrayList<TimeValueObject> spontanValues)
     {
         HashMap<OffsetDateTime, ArrayList<Float>> hourValuesMap = new HashMap<>();
 
@@ -441,14 +441,14 @@ public class HuaweiFusionCollector extends Collector
             ArrayList<Float> values = hourValuesMap.get(hour);
             BigDecimal sum = new BigDecimal(values.stream().collect(Collectors.summingDouble(d->d)));
 
-            hourValues.add(new TimeValueObject(hour, meeteringPoint.getId(), meeteringPoint.getDatapoints().get(0), providerAccount.getProviderAccountId(),
-                    sum, new BigDecimal(0), meeteringPoint.getType().ordinal()));
+            hourValues.add(new TimeValueObject(hour, meteringPoint.getId(), meteringPoint.getDatapoints().get(0), providerAccount.getProviderAccountId(),
+                    sum, new BigDecimal(0), meteringPoint.getType().ordinal()));
         }
 
         return hourValues;
     }
 
-    private ArrayList<TimeValueObject> getMeterProductionSpontanValuesFromHuawei(MeeteringPoint meeteringPoint, OffsetDateTime from) throws Exception
+    private ArrayList<TimeValueObject> getMeterProductionSpontanValuesFromHuawei(MeteringPoint meteringPoint, OffsetDateTime from) throws Exception
     {
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
@@ -462,7 +462,7 @@ public class HuaweiFusionCollector extends Collector
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://region01eu5.fusionsolar.huawei.com/rest/pvms/web/station/v1/" +
-                            "overview/energy-balance?stationDn=" + URLEncoder.encode(meeteringPoint.getId()) + "&timeDim=2&queryTime=" + from.toEpochSecond() + "000&timeZone=1&timeZoneStr=Europe%2FVienna&_=" + OffsetDateTime.now().toEpochSecond() + "000"))
+                            "overview/energy-balance?stationDn=" + URLEncoder.encode(meteringPoint.getId()) + "&timeDim=2&queryTime=" + from.toEpochSecond() + "000&timeZone=1&timeZoneStr=Europe%2FVienna&_=" + OffsetDateTime.now().toEpochSecond() + "000"))
                     .header("User-Agent", "okhttp/3.10.0")
                     .header("Content-Type", "application/json")
                     .header("Accept", "*/*")
@@ -482,7 +482,7 @@ public class HuaweiFusionCollector extends Collector
                 JsonArray times = data.getAsJsonArray("xAxis");
                 JsonArray producedPower = data.getAsJsonArray("productPower");
 
-                String datapointname = meeteringPoint.getDatapoints().get(0);
+                String datapointname = meteringPoint.getDatapoints().get(0);
 
                 for (int i = 0; i < times.size(); i++)
                 {
@@ -500,8 +500,8 @@ public class HuaweiFusionCollector extends Collector
                     if ( value.intValue() == 0 )//do not write zero
                         continue;
 
-                    timeValueObjects.add(new TimeValueObject(dateTime, meeteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                            value, new BigDecimal(0), meeteringPoint.getType().ordinal()));
+                    timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                            value, new BigDecimal(0), meteringPoint.getType().ordinal()));
                 }
 
                 //return timeValueObjects;
@@ -598,37 +598,37 @@ public class HuaweiFusionCollector extends Collector
 
                 FppssRestConnector fppssRestConnector = new FppssRestConnector(System.getenv("FPPSS_REST_URL"));
 
-                ArrayList<MeeteringPoint> meeteringPoints = new ArrayList<>();
+                ArrayList<MeteringPoint> meteringPoints = new ArrayList<>();
                 var datapoints = new ArrayList<String>();
                 datapoints.add("productPower");
-                meeteringPoints.add(new MeeteringPoint(deviceId, MeeteringPoint.Type.Production, MeeteringPoint.MeeteringPointType.AccountingPoint, datapoints));
+                meteringPoints.add(new MeteringPoint(deviceId, MeteringPoint.Type.Production, MeteringPoint.MeteringPointType.AccountingPoint, datapoints));
 
-                for (var meeteringPoint : meeteringPoints)
+                for (var meteringPoint : meteringPoints)
                 {
                         //year values
-                        OffsetDateTime lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.year, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> yearValues = getMeterProductionYearValuesFromHuawei(meeteringPoint, lastTimestamp);
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.year, yearValues);
+                        OffsetDateTime lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.year, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> yearValues = getMeterProductionYearValuesFromHuawei(meteringPoint, lastTimestamp);
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.year, yearValues);
 
                         //month values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.month, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> monthValues = getMeterProductionMonthValuesFromHuawei(meeteringPoint, lastTimestamp);
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.month, monthValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.month, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> monthValues = getMeterProductionMonthValuesFromHuawei(meteringPoint, lastTimestamp);
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.month, monthValues);
 
                         //day values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> dayValues = getMeterProductionDayValuesFromHuawei(meeteringPoint, lastTimestamp);
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.day, dayValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> dayValues = getMeterProductionDayValuesFromHuawei(meteringPoint, lastTimestamp);
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.day, dayValues);
 
                         //hour values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.hour, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject> hourValues = getMeterProductionHourValuesFromHuawei(meeteringPoint, lastTimestamp);
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.hour, hourValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.hour, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject> hourValues = getMeterProductionHourValuesFromHuawei(meteringPoint, lastTimestamp);
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.hour, hourValues);
 
                         //spontan values
-                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meeteringPoint, TimeValueObject.Resolution.spontan, providerAccount.getProviderAccountId());
-                        ArrayList<TimeValueObject>spontanValues = getMeterProductionSpontanValuesFromHuawei(meeteringPoint, lastTimestamp);
-                        fppssRestConnector.saveMeterValuesInDatabase(meeteringPoint, TimeValueObject.Resolution.spontan, spontanValues);
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.spontan, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject>spontanValues = getMeterProductionSpontanValuesFromHuawei(meteringPoint, lastTimestamp);
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.spontan, spontanValues);
 
 
                 }
