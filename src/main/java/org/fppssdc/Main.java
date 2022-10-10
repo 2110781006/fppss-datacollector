@@ -19,8 +19,8 @@ public class Main
 
         Integer interval = 60 * 5;//5 minutes
 
-        if ( System.getenv("INTERVAL") != null && !System.getenv("INTERVAL").isEmpty() && !System.getenv("INTERVAL").equals("") )
-            interval = Integer.parseInt(System.getenv("INTERVAL"));
+        if ( System.getenv("FPPSS_INTERVAL") != null && !System.getenv("FPPSS_INTERVAL").isEmpty() && !System.getenv("FPPSS_INTERVAL").equals("") )
+            interval = Integer.parseInt(System.getenv("FPPSS_INTERVAL"));
 
 
         System.out.println("Start Application");

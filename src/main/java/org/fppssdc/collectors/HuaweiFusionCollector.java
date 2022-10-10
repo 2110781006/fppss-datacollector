@@ -462,7 +462,7 @@ public class HuaweiFusionCollector extends Collector
                     if (!producedPower.get(i).getAsString().equals("") && !producedPower.get(i).getAsString().equals("--"))
                         value = producedPower.get(i).getAsBigDecimal();
 
-                    if ( value.intValue() == 0 )//do not write zero
+                    if ( value.floatValue() == 0 )//do not write zero
                         continue;
 
                     timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
