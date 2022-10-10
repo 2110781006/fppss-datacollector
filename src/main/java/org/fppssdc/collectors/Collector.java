@@ -6,9 +6,6 @@
 package org.fppssdc.collectors;
 
 import org.fppssdc.model.ProviderAccountObject;
-import org.fppssdc.model.TimeValueObject;
-
-import java.util.ArrayList;
 
 /**
  * Abstract collector class for each collectortype

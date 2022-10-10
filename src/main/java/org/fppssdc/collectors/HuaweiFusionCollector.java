@@ -21,11 +21,11 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAmount;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class HuaweiFusionCollector extends Collector
@@ -46,7 +46,7 @@ public class HuaweiFusionCollector extends Collector
                 .build();
     }
 
-    void logout() throws Exception
+    void logoff() throws Exception
     {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://region01eu5.fusionsolar.huawei.com/unisess/v1/logout"))
@@ -56,7 +56,7 @@ public class HuaweiFusionCollector extends Collector
                 .GET()
                 .build();
 
-        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     void login() throws Exception
@@ -599,13 +599,13 @@ public class HuaweiFusionCollector extends Collector
                 }
 
                 Thread.sleep(interval*1000);
-                logout();
+                logoff();
             }
             catch (Exception e)
             {
                 try
                 {
-                    //logoff();
+                    logoff();
                 }
                 catch (Exception ex)
                 {

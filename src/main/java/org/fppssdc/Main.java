@@ -1,6 +1,5 @@
 package org.fppssdc;
 
-import org.fppssdc.collectors.Collector;
 import org.fppssdc.collectors.HuaweiFusionCollector;
 import org.fppssdc.collectors.NetzBurgenlandCollector;
 import org.fppssdc.connectors.FppssRestConnector;
@@ -20,7 +19,7 @@ public class Main
 
         Integer interval = 60 * 5;//5 minutes
 
-        if ( System.getenv("INTERVAL") != null && ( System.getenv("INTERVAL").isEmpty() || System.getenv("INTERVAL").equals("")) )
+        if ( System.getenv("INTERVAL") != null && !System.getenv("INTERVAL").isEmpty() && !System.getenv("INTERVAL").equals("") )
             interval = Integer.parseInt(System.getenv("INTERVAL"));
 
 
@@ -34,7 +33,7 @@ public class Main
         System.out.println("FPPSS_REST_URL: "+System.getenv("FPPSS_REST_URL"));
         System.out.println("Interval: "+interval+" seconds");
 
-        HashMap<Integer, Thread> startedCollectors = new HashMap<Integer, Thread>();
+        HashMap<Integer, Thread> startedCollectors = new HashMap<>();
 
         while(true)//start provider accounts loop
         {
@@ -86,7 +85,7 @@ public class Main
                 }
                 catch (InterruptedException e)
                 {
-                    throw new RuntimeException(e);
+                    e.printStackTrace();
                 }
             }
         }

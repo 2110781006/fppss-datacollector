@@ -5,13 +5,12 @@
 
 package org.fppssdc.connectors;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
 import org.fppssdc.model.MeteringPoint;
 import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URI;
