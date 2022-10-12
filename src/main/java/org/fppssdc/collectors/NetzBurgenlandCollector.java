@@ -15,19 +15,18 @@ import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.URI;
-import java.net.URL;
+
+import java.math.BigDecimal;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 
 public class NetzBurgenlandCollector extends Collector
 {
@@ -566,6 +565,118 @@ public class NetzBurgenlandCollector extends Collector
         return sessionInfo;
     }
 
+    private ArrayList<TimeValueObject> getMeterConsumptionSpontanValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    {
+        if ( from.toEpochSecond() < to.minusMonths(5).toEpochSecond() )//max 1 month
+            from = to.minusMonths(1);
+
+        String fromStr = from.minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));//always get a week before
+        String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00"));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl+"/consumption/date?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .header("User-Agent", "PostmanRuntime/7.29.0")
+                .header("Accept", "*/*")
+                .header("Accept-Encoding", "gzip, deflate, br")
+                .GET()
+                .build();
+
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
+
+        if (response.statusCode() == 200)
+        {
+            Gson gson = new Gson();
+
+            var jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
+
+            String datapointname = meteringPoint.getDatapoints().get(0);
+
+            for ( JsonElement jsonElement : jsonArray )
+            {
+                JsonObject jsonObject = (JsonObject) jsonElement;
+
+                //if ( jsonObject.get("name").getAsString().equals(datapointname) )
+                {
+                    JsonArray data = jsonObject.get("data").getAsJsonArray();
+
+                    for ( JsonElement d : data )
+                    {
+                        JsonObject o = (JsonObject) d;
+
+                        if ( o.get("value") != null && o.get("reading") != null )//full qualified value
+                        {
+                            OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"",""));
+                            OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
+                                    tempTime.getMonthValue(),tempTime.getDayOfMonth(), tempTime.getHour(), tempTime.getMinute(),0,0, ZoneOffset.UTC);
+
+                            timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                    o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
+                        }
+                    }
+                }
+            }
+        }
+        return timeValueObjects;
+    }
+
+    private ArrayList<TimeValueObject> getMeterFeedinSpontanValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
+    {
+        if ( from.toEpochSecond() < to.minusMonths(5).toEpochSecond() )//max 1 month
+            from = to.minusMonths(1);
+
+        String fromStr = from.minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));//always get a week before
+        String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00"));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(apiUrl+"/feedin/date?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
+                .header("User-Agent", "PostmanRuntime/7.29.0")
+                .header("Accept", "*/*")
+                .header("Accept-Encoding", "gzip, deflate, br")
+                .GET()
+                .build();
+
+        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
+
+        if (response.statusCode() == 200)
+        {
+            Gson gson = new Gson();
+
+            var jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
+
+            String datapointname = meteringPoint.getDatapoints().get(0);
+
+            for ( JsonElement jsonElement : jsonArray )
+            {
+                JsonObject jsonObject = (JsonObject) jsonElement;
+
+                //if ( jsonObject.get("name").getAsString().equals(datapointname) )
+                {
+                    JsonArray data = jsonObject.get("data").getAsJsonArray();
+
+                    for ( JsonElement d : data )
+                    {
+                        JsonObject o = (JsonObject) d;
+
+                        if ( o.get("value") != null && o.get("reading") != null )//full qualified value
+                        {
+                            OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"",""));
+                            OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
+                                    tempTime.getMonthValue(),tempTime.getDayOfMonth(), tempTime.getHour(), tempTime.getMinute(),0,0, ZoneOffset.UTC);
+
+                            timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                    o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
+                        }
+                    }
+                }
+            }
+        }
+        return timeValueObjects;
+    }
+
     @Override
     public void run()
     {
@@ -602,6 +713,17 @@ public class NetzBurgenlandCollector extends Collector
                         lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
                         ArrayList<TimeValueObject> dayValues = getMeterConsumptionDayValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
                         fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.day, dayValues);
+
+                        //hour values
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.hour, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject>spontanValues = getMeterConsumptionSpontanValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        ArrayList<TimeValueObject> hourValues = buildHourValuesFromSpontanValues(meteringPoint, spontanValues);
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.hour, hourValues);
+
+                        //spontan values
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.spontan, providerAccount.getProviderAccountId());
+                        spontanValues = getMeterConsumptionSpontanValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.spontan, spontanValues);
                     }
                 }
 
@@ -628,6 +750,17 @@ public class NetzBurgenlandCollector extends Collector
                         lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.day, providerAccount.getProviderAccountId());
                         ArrayList<TimeValueObject> dayValues = getMeterFeedinDayValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
                         fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.day, dayValues);
+
+                        //hour values
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.hour, providerAccount.getProviderAccountId());
+                        ArrayList<TimeValueObject>spontanValues = getMeterFeedinSpontanValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        ArrayList<TimeValueObject> hourValues = buildHourValuesFromSpontanValues(meteringPoint, spontanValues);
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.hour, hourValues);
+
+                        //spontan values
+                        lastTimestamp = fppssRestConnector.getMeterLastTimestamp(meteringPoint, TimeValueObject.Resolution.spontan, providerAccount.getProviderAccountId());
+                        spontanValues = getMeterFeedinSpontanValuesFromNetzBurgenland(meteringPoint, lastTimestamp, OffsetDateTime.now());
+                        fppssRestConnector.saveMeterValuesInDatabase(meteringPoint, TimeValueObject.Resolution.spontan, spontanValues);
                     }
                 }
 

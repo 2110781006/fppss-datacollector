@@ -383,35 +383,7 @@ public class HuaweiFusionCollector extends Collector
         return timeValueObjects;
     }
 
-    private ArrayList<TimeValueObject> buildHourValuesFromSpontanValues(MeteringPoint meteringPoint, ArrayList<TimeValueObject> spontanValues)
-    {
-        HashMap<OffsetDateTime, ArrayList<Float>> hourValuesMap = new HashMap<>();
 
-        ArrayList<TimeValueObject> hourValues = new ArrayList<>();
-
-        for ( var spontanValue : spontanValues )
-        {
-            OffsetDateTime hourTimestamp = OffsetDateTime.of(spontanValue.getTimestamp().getYear(),
-                    spontanValue.getTimestamp().getMonthValue(),spontanValue.getTimestamp().getDayOfMonth(),
-                    spontanValue.getTimestamp().getHour(),0,0,0, ZoneOffset.UTC);
-
-            if ( !hourValuesMap.containsKey(hourTimestamp) )
-                hourValuesMap.put(hourTimestamp, new ArrayList<Float>());
-
-            hourValuesMap.get(hourTimestamp).add(spontanValue.getValue().floatValue());
-        }
-
-        for ( var hour : hourValuesMap.keySet() )
-        {
-            ArrayList<Float> values = hourValuesMap.get(hour);
-            BigDecimal sum = new BigDecimal(values.stream().collect(Collectors.summingDouble(d->d)));
-
-            hourValues.add(new TimeValueObject(hour, meteringPoint.getId(), meteringPoint.getDatapoints().get(0), providerAccount.getProviderAccountId(),
-                    sum, new BigDecimal(0), meteringPoint.getType().ordinal()));
-        }
-
-        return hourValues;
-    }
 
     private ArrayList<TimeValueObject> getMeterProductionSpontanValuesFromHuawei(MeteringPoint meteringPoint, OffsetDateTime from) throws Exception
     {
