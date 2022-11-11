@@ -167,7 +167,7 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject jsonObject = (JsonObject) jsonElement;
 
-            if ( jsonObject.get("name").getAsString().equals(datapointname) )
+            if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Hochtarif"))
             {
                 JsonArray data = jsonObject.get("data").getAsJsonArray();
 
@@ -226,7 +226,7 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject jsonObject = (JsonObject) jsonElement;
 
-            if ( jsonObject.get("name").getAsString().equals(datapointname) )
+            if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Hochtarif") )
             {
                 JsonArray data = jsonObject.get("data").getAsJsonArray();
 
@@ -278,7 +278,7 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject jsonObject = (JsonObject) jsonElement;
 
-            if ( jsonObject.get("name").getAsString().equals(datapointname) )
+            if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Hochtarif") )
             {
                 JsonArray data = jsonObject.get("data").getAsJsonArray();
 
@@ -334,7 +334,7 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject jsonObject = (JsonObject) jsonElement;
 
-            if ( jsonObject.get("name").getAsString().equals(datapointname) )
+            if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Hochtarif"))
             {
                 JsonArray data = jsonObject.get("data").getAsJsonArray();
 
@@ -397,7 +397,7 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject jsonObject = (JsonObject) jsonElement;
 
-            if ( jsonObject.get("name").getAsString().equals(datapointname) )
+            if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Hochtarif"))
             {
                 JsonArray data = jsonObject.get("data").getAsJsonArray();
 
@@ -455,7 +455,7 @@ public class NetzBurgenlandCollector extends Collector
         {
             JsonObject jsonObject = (JsonObject) jsonElement;
 
-            if ( jsonObject.get("name").getAsString().equals(datapointname) )
+            if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Hochtarif"))
             {
                 JsonArray data = jsonObject.get("data").getAsJsonArray();
 
@@ -597,7 +597,7 @@ public class NetzBurgenlandCollector extends Collector
             {
                 JsonObject jsonObject = (JsonObject) jsonElement;
 
-                //if ( jsonObject.get("name").getAsString().equals(datapointname) )
+                if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Gesamtverbrauch"))
                 {
                     JsonArray data = jsonObject.get("data").getAsJsonArray();
 
@@ -653,7 +653,7 @@ public class NetzBurgenlandCollector extends Collector
             {
                 JsonObject jsonObject = (JsonObject) jsonElement;
 
-                //if ( jsonObject.get("name").getAsString().equals(datapointname) )
+                if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Gesamteinspeisung"))
                 {
                     JsonArray data = jsonObject.get("data").getAsJsonArray();
 
