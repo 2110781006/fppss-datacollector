@@ -16,6 +16,7 @@ public class Main
     public static void main(String[] args)
     {
         Properties properties = System.getProperties();
+        properties.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
 
         Integer interval = 60 * 5;//5 minutes
 
