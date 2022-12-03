@@ -13,6 +13,9 @@ import org.fppssdc.model.MeteringPoint;
 import org.fppssdc.model.ProviderAccountObject;
 import org.fppssdc.model.TimeValueObject;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.math.BigDecimal;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -21,6 +24,8 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -40,10 +45,44 @@ public class HuaweiFusionCollector extends Collector
         super.providerAccount = providerAccount;
         super.interval = interval;
 
-        client = HttpClient.newBuilder()
-                .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
-                .followRedirects(HttpClient.Redirect.ALWAYS)
-                .build();
+        try
+        {
+
+
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+
+            // set up a TrustManager that trusts everything
+            sslContext.init(null, new TrustManager[]{new X509TrustManager()
+            {
+                public X509Certificate[] getAcceptedIssuers()
+                {
+                    //System.out.println("getAcceptedIssuers =============");
+                    return null;
+                }
+
+                public void checkClientTrusted(X509Certificate[] certs,
+                                               String authType)
+                {
+                    //System.out.println("checkClientTrusted =============");
+                }
+
+                public void checkServerTrusted(X509Certificate[] certs,
+                                               String authType)
+                {
+                    //System.out.println("checkServerTrusted =============");
+                }
+            }}, new SecureRandom());
+
+            client = HttpClient.newBuilder()
+                    .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
+                    .followRedirects(HttpClient.Redirect.ALWAYS)
+                    .sslContext(sslContext)
+                    .build();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     void logoff() throws Exception
@@ -588,7 +627,7 @@ public class HuaweiFusionCollector extends Collector
 
             try
             {
-                Thread.sleep(10000);
+                Thread.sleep(60*10*1000);
             }
             catch (InterruptedException e)
             {

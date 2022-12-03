@@ -39,7 +39,10 @@ public class Main
         {
             try
             {
+                System.out.println("Get data loop exec");
                 FppssRestConnector fppssRestConnector = new FppssRestConnector(System.getenv("FPPSS_REST_URL"));
+
+                fppssRestConnector.login();
 
                 ProviderAccountObject[] providerAccounts = fppssRestConnector.getProviderAccounts();
 
@@ -76,6 +79,7 @@ public class Main
             catch (Exception e)
             {
                 new Exception("Could not get provider accounts").printStackTrace();
+                e.printStackTrace();
             }
             finally
             {
