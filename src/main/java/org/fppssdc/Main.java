@@ -88,7 +88,7 @@ public class Main
             {
                 try
                 {
-                    Thread.sleep(60000);//check each hour if new provider
+                    Thread.sleep(5*60*1000);//check each 5 min if new provider
                 }
                 catch (InterruptedException e)
                 {
