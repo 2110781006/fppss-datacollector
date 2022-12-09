@@ -566,6 +566,9 @@ public class HuaweiFusionCollector extends Collector
         {
             try
             {
+                System.out.println("Get data for provider: "+providerAccount);
+                Runtime.getRuntime().gc();//call garbage colletor
+
                 login();
 
                 String csrToken = getCsrToken();
@@ -609,7 +612,6 @@ public class HuaweiFusionCollector extends Collector
 
                 }
 
-                Thread.sleep(interval*1000);
                 logoff();
             }
             catch (Exception e)
@@ -627,7 +629,7 @@ public class HuaweiFusionCollector extends Collector
 
             try
             {
-                Thread.sleep(60*10*1000);
+                Thread.sleep(interval*1000);
             }
             catch (InterruptedException e)
             {

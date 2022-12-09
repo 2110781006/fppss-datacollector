@@ -723,6 +723,9 @@ public class NetzBurgenlandCollector extends Collector
         {
             try
             {
+                System.out.println("Get data for provider: "+providerAccount);
+                Runtime.getRuntime().gc();//call garbage colletor
+
                 login();
 
                 FppssRestConnector fppssRestConnector = new FppssRestConnector(System.getenv("FPPSS_REST_URL"));
