@@ -40,7 +40,7 @@ public class Main
         {
             try
             {
-                System.out.println("Get data loop exec");
+                System.out.println("Check if new provider");
                 FppssRestConnector fppssRestConnector = new FppssRestConnector(System.getenv("FPPSS_REST_URL"));
 
                 fppssRestConnector.login();
@@ -53,6 +53,7 @@ public class Main
                     {
                         if ( !startedCollectors.containsKey(providerAccount.getProviderAccountId()) )//start collector if not running
                         {
+                            System.out.println("Start new HuawayFusionCollector: "+providerAccount);
                             HuaweiFusionCollector huaweiFusionCollector = new HuaweiFusionCollector(providerAccount, interval);
 
                             Thread huaweiFusionCollectorThread = new Thread(huaweiFusionCollector);
@@ -66,6 +67,7 @@ public class Main
                     {
                         if ( !startedCollectors.containsKey(providerAccount.getProviderAccountId()) )//start collector if not running
                         {
+                            System.out.println("Start new NetzBurgenlandCollector: "+providerAccount);
                             NetzBurgenlandCollector netzBurgenlandCollector = new NetzBurgenlandCollector(providerAccount, interval);
 
                             Thread netzBurgenlandCollectorThread = new Thread(netzBurgenlandCollector);
@@ -86,7 +88,7 @@ public class Main
             {
                 try
                 {
-                    Thread.sleep(10000);
+                    Thread.sleep(5*60*1000);//check each 5 min if new provider
                 }
                 catch (InterruptedException e)
                 {
