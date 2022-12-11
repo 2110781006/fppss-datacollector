@@ -609,52 +609,67 @@ public class NetzBurgenlandCollector extends Collector
 
     private ArrayList<TimeValueObject> getMeterConsumptionSpontanValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
-        if ( from.toEpochSecond() < to.minusMonths(5).toEpochSecond() )//max 1 month
-            from = to.minusMonths(1);
-
-        String fromStr = from.minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));//always get a week before
-        String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00"));
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/consumption/date?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
-                .header("User-Agent", "PostmanRuntime/7.29.0")
-                .header("Accept", "*/*")
-                .header("Accept-Encoding", "gzip, deflate, br")
-                .GET()
-                .build();
-
-        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if ( from.toEpochSecond() < to.minusMonths(6).toEpochSecond() )//max 6 month
+            from = to.minusMonths(6);
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        if (response.statusCode() == 200)
+        int cnt = 0;
+
+        while(timeValueObjects.size() == 0)
         {
-            Gson gson = new Gson();
+            if (cnt > 0)//plus one month
+                from = from.plusMonths(1);
 
-            var jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
+            cnt++;
 
-            String datapointname = meteringPoint.getDatapoints().get(0);
+            if (from.toEpochSecond() > to.toEpochSecond())//break
+                break;
 
-            for ( JsonElement jsonElement : jsonArray )
+            String fromStr = from.minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));//always get a week before
+            String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00"));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl + "/consumption/date?end=" + toStr + "%2B01:00&meteringPointIdentifier=" + meteringPoint.getId() + "&start=" + fromStr + "%2B01:00"))
+                    .header("User-Agent", "PostmanRuntime/7.29.0")
+                    .header("Accept", "*/*")
+                    .header("Accept-Encoding", "gzip, deflate, br")
+                    .GET()
+                    .build();
+
+            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+
+
+            if (response.statusCode() == 200)
             {
-                JsonObject jsonObject = (JsonObject) jsonElement;
+                Gson gson = new Gson();
 
-                if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Gesamtverbrauch"))
+                var jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
+
+                String datapointname = meteringPoint.getDatapoints().get(0);
+
+                for (JsonElement jsonElement : jsonArray)
                 {
-                    JsonArray data = jsonObject.get("data").getAsJsonArray();
+                    JsonObject jsonObject = (JsonObject) jsonElement;
 
-                    for ( JsonElement d : data )
+                    if (jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Gesamtverbrauch"))
                     {
-                        JsonObject o = (JsonObject) d;
+                        JsonArray data = jsonObject.get("data").getAsJsonArray();
 
-                        if ( o.get("value") != null && o.get("reading") != null )//full qualified value
+                        for (JsonElement d : data)
                         {
-                            OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"",""));
-                            OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
-                                    tempTime.getMonthValue(),tempTime.getDayOfMonth(), tempTime.getHour(), tempTime.getMinute(),0,0, ZoneOffset.UTC);
+                            JsonObject o = (JsonObject) d;
 
-                            timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                    o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
+                            if (o.get("value") != null && o.get("reading") != null)//full qualified value
+                            {
+                                OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"", ""));
+                                OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
+                                        tempTime.getMonthValue(), tempTime.getDayOfMonth(), tempTime.getHour(), tempTime.getMinute(), 0, 0, ZoneOffset.UTC);
+
+                                timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                        o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
+                            }
                         }
                     }
                 }
@@ -665,57 +680,72 @@ public class NetzBurgenlandCollector extends Collector
 
     private ArrayList<TimeValueObject> getMeterFeedinSpontanValuesFromNetzBurgenland(MeteringPoint meteringPoint, OffsetDateTime from, OffsetDateTime to) throws Exception
     {
-        if ( from.toEpochSecond() < to.minusMonths(5).toEpochSecond() )//max 1 month
-            from = to.minusMonths(1);
-
-        String fromStr = from.minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));//always get a week before
-        String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00"));
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl+"/feedin/date?end="+toStr+"%2B01:00&meteringPointIdentifier="+meteringPoint.getId()+"&start="+fromStr+"%2B01:00"))
-                .header("User-Agent", "PostmanRuntime/7.29.0")
-                .header("Accept", "*/*")
-                .header("Accept-Encoding", "gzip, deflate, br")
-                .GET()
-                .build();
-
-        HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if ( from.toEpochSecond() < to.minusMonths(6).toEpochSecond() )//max 6 month
+            from = to.minusMonths(6);
 
         ArrayList<TimeValueObject> timeValueObjects = new ArrayList<>();
 
-        if (response.statusCode() == 200)
+        int cnt = 0;
+
+        while(timeValueObjects.size() == 0)
         {
-            Gson gson = new Gson();
+            if ( cnt > 0 )//plus one month
+                from = from.plusMonths(1);
 
-            var jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
+            cnt++;
 
-            String datapointname = meteringPoint.getDatapoints().get(0);
+            if ( from.toEpochSecond() > to.toEpochSecond() )//break
+                break;
 
-            for ( JsonElement jsonElement : jsonArray )
+            String fromStr = from.minusDays(7).format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'00:00:00"));//always get a week before
+            String toStr = to.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:00:00"));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(apiUrl + "/feedin/date?end=" + toStr + "%2B01:00&meteringPointIdentifier=" + meteringPoint.getId() + "&start=" + fromStr + "%2B01:00"))
+                    .header("User-Agent", "PostmanRuntime/7.29.0")
+                    .header("Accept", "*/*")
+                    .header("Accept-Encoding", "gzip, deflate, br")
+                    .GET()
+                    .build();
+
+            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+
+            if (response.statusCode() == 200)
             {
-                JsonObject jsonObject = (JsonObject) jsonElement;
+                Gson gson = new Gson();
 
-                if ( jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Gesamteinspeisung"))
+                var jsonArray = gson.fromJson((String) response.body(), JsonArray.class);
+
+                String datapointname = meteringPoint.getDatapoints().get(0);
+
+                for (JsonElement jsonElement : jsonArray)
                 {
-                    JsonArray data = jsonObject.get("data").getAsJsonArray();
+                    JsonObject jsonObject = (JsonObject) jsonElement;
 
-                    for ( JsonElement d : data )
+                    if (jsonObject.get("name").getAsString().equals(datapointname) || jsonObject.get("name").getAsString().equals("Gesamteinspeisung"))
                     {
-                        JsonObject o = (JsonObject) d;
+                        JsonArray data = jsonObject.get("data").getAsJsonArray();
 
-                        if ( o.get("value") != null && o.get("reading") != null )//full qualified value
+                        for (JsonElement d : data)
                         {
-                            OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"",""));
-                            OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
-                                    tempTime.getMonthValue(),tempTime.getDayOfMonth(), tempTime.getHour(), tempTime.getMinute(),0,0, ZoneOffset.UTC);
+                            JsonObject o = (JsonObject) d;
 
-                            timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
-                                    o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
+                            if (o.get("value") != null && o.get("reading") != null)//full qualified value
+                            {
+                                OffsetDateTime tempTime = OffsetDateTime.parse(o.get("endTimestamp").getAsString().replace("\"", ""));
+                                OffsetDateTime dateTime = OffsetDateTime.of(tempTime.getYear(),
+                                        tempTime.getMonthValue(), tempTime.getDayOfMonth(), tempTime.getHour(), tempTime.getMinute(), 0, 0, ZoneOffset.UTC);
+
+                                timeValueObjects.add(new TimeValueObject(dateTime, meteringPoint.getId(), datapointname, providerAccount.getProviderAccountId(),
+                                        o.get("value").getAsBigDecimal(), o.get("reading").getAsBigDecimal(), meteringPoint.getType().ordinal()));
+                            }
                         }
                     }
                 }
             }
         }
+
         return timeValueObjects;
     }
 
