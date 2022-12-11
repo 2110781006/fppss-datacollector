@@ -24,6 +24,7 @@ import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.time.*;
@@ -523,6 +524,7 @@ public class NetzBurgenlandCollector extends Collector
     {
         SessionInfo sessionInfo = getSessionInfo();
 
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://login.netzburgenland.at:8453/auth/realms/netzburgenland/login-actions/authenticate?"+
                         "session_code="+sessionInfo.code+"&"+
@@ -533,13 +535,16 @@ public class NetzBurgenlandCollector extends Collector
                 .header("Accept", "*/*")
                 .header("Accept-Encoding", "gzip, deflate, br")
                 .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString("username="+providerAccount.getProviderAccountUsername()+"&password="+providerAccount.getDecryptedPw()))
+                .POST(HttpRequest.BodyPublishers.ofString("username="+URLEncoder.encode(providerAccount.getProviderAccountUsername(), "UTF-8")+
+                        "&password="+URLEncoder.encode(providerAccount.getDecryptedPw(), "UTF-8")))
                 .build();
 
         HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         if ( response.statusCode() != 200 || ((String)response.body()).contains("error") )//error while login
+        {
             throw new Exception("Login error");
+        }
     }
 
     /**
@@ -579,7 +584,7 @@ public class NetzBurgenlandCollector extends Collector
 
         //get login form
         var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
+        //System.out.println(response.body());
         //get dom of login page
         Document dom = Jsoup.parse(response.body());
 

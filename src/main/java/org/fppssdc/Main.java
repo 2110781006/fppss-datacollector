@@ -60,6 +60,8 @@ public class Main
 
                             huaweiFusionCollectorThread.start();
 
+                            Thread.sleep(10000);//delayed start
+
                             startedCollectors.put(providerAccount.getProviderAccountId(), huaweiFusionCollectorThread);
                         }
                     }
@@ -73,6 +75,8 @@ public class Main
                             Thread netzBurgenlandCollectorThread = new Thread(netzBurgenlandCollector);
 
                             netzBurgenlandCollectorThread.start();
+
+                            Thread.sleep(10000);//delayed start
 
                             startedCollectors.put(providerAccount.getProviderAccountId(), netzBurgenlandCollectorThread);
                         }
